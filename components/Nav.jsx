@@ -4,7 +4,7 @@ export default function Nav({ theme, onToggleTheme }) {
   return (
     <nav className="nav">
       <div className="nav-brand">
-        <span>Properties Technological Solutions</span>
+        <span>PTS</span>
       </div>
       <div className="nav-actions">
         <a href="#services">Services</a>

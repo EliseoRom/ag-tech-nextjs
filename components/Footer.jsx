@@ -27,10 +27,6 @@ export default function Footer() {
         </div>
         <div className="foot-col">
           <h6>Contact</h6>
-          <a href="mailto:hola@ag-tech.studio">hola@ag-tech.studio</a>
-          <a href="#">+34 600 000 000</a>
-          <a href="#">LinkedIn</a>
-          <a href="#">Instagram</a>
         </div>
       </div>
       <div className="foot-bottom">

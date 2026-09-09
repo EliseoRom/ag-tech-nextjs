@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
 import Marquee from "@/components/Marquee";
@@ -18,6 +18,7 @@ const ACCENT = "#38BDF8";
 
 export default function Page() {
   const [theme, setTheme] = useState("dark");
+  const themeTimer = useRef(null);
 
   useEffect(() => {
     document.documentElement.style.setProperty("--accent", ACCENT);
@@ -35,13 +36,16 @@ export default function Page() {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
+  useEffect(() => () => window.clearTimeout(themeTimer.current), []);
+
   const toggleTheme = useCallback(() => {
     const root = document.documentElement;
     root.classList.add("theme-changing");
     requestAnimationFrame(() => {
       setTheme((prev) => (prev === "dark" ? "light" : "dark"));
     });
-    window.setTimeout(() => {
+    window.clearTimeout(themeTimer.current);
+    themeTimer.current = window.setTimeout(() => {
       root.classList.remove("theme-changing");
     }, 6800);
   }, []);

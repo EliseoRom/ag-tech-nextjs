@@ -34,6 +34,7 @@ export default function Hero({ accent, heroVariant, title }) {
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      cancelAnimationFrame(raf);
     };
   }, []);
 

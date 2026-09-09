@@ -17,7 +17,10 @@ export default function ScrollProgress() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
   }, []);
   return <div ref={ref} className="scroll-progress"></div>;
 }

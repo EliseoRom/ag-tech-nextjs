@@ -9,6 +9,15 @@ export default function HeroCanvas({ accent, variant }) {
   useEffect(() => {
     if (!mountRef.current) return;
     const mount = mountRef.current;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    const isLite =
+      reducedMotion ||
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.innerWidth < 768;
+    const starCount = isLite ? 420 : 1800;
+    const flareCount = isLite ? 6 : 14;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
@@ -19,8 +28,12 @@ export default function HeroCanvas({ accent, variant }) {
     );
     camera.position.z = 6;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const renderer = new THREE.WebGLRenderer({
+      antialias: !isLite,
+      alpha: true,
+      powerPreference: isLite ? "low-power" : "default",
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isLite ? 1 : 1.5));
     renderer.setSize(mount.clientWidth, mount.clientHeight);
     mount.appendChild(renderer.domElement);
 
@@ -33,7 +46,7 @@ export default function HeroCanvas({ accent, variant }) {
     // Far star field
     let starField;
     {
-      const count = 1800;
+      const count = starCount;
       const positions = new Float32Array(count * 3);
       for (let i = 0; i < count; i++) {
         positions[i * 3] = (Math.random() - 0.5) * 28;
@@ -57,12 +70,12 @@ export default function HeroCanvas({ accent, variant }) {
     // Glowing flares (slow drift)
     let flares;
     {
-      const flareCount = 14;
-      const positions = new Float32Array(flareCount * 3);
+      const activeFlareCount = flareCount;
+      const positions = new Float32Array(activeFlareCount * 3);
       const speeds = [];
       const phases = [];
       const radii = [];
-      for (let i = 0; i < flareCount; i++) {
+      for (let i = 0; i < activeFlareCount; i++) {
         positions[i * 3] = (Math.random() - 0.5) * 16;
         positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
         positions[i * 3 + 2] = -3 - Math.random() * 8;
@@ -103,7 +116,7 @@ export default function HeroCanvas({ accent, variant }) {
     let particleSystem, mainMesh, ring, innerMesh;
 
     if (variant === "particles") {
-      const count = 2400;
+      const count = isLite ? 700 : 2400;
       const positions = new Float32Array(count * 3);
       for (let i = 0; i < count; i++) {
         const r = 1.6 + Math.random() * 1.6;
@@ -190,7 +203,7 @@ export default function HeroCanvas({ accent, variant }) {
       mx = (e.clientX / window.innerWidth - 0.5) * 2;
       my = (e.clientY / window.innerHeight - 0.5) * 2;
     };
-    window.addEventListener("mousemove", onMove);
+    if (!isLite) window.addEventListener("mousemove", onMove);
 
     let scrollY = 0;
     const onScroll = () => {
@@ -199,6 +212,7 @@ export default function HeroCanvas({ accent, variant }) {
     window.addEventListener("scroll", onScroll, { passive: true });
 
     const onResize = () => {
+      if (!mount.clientWidth || !mount.clientHeight) return;
       camera.aspect = mount.clientWidth / mount.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(mount.clientWidth, mount.clientHeight);
@@ -206,9 +220,12 @@ export default function HeroCanvas({ accent, variant }) {
     window.addEventListener("resize", onResize);
 
     let raf;
+    let running = false;
+    let inView = true;
+    let lastFrame = 0;
+    const minFrameMs = isLite ? 33 : 0;
     const clock = new THREE.Clock();
-    const animate = () => {
-      const t = clock.getElapsedTime();
+    const draw = (t) => {
       cx += (mx - cx) * 0.06;
       cy += (my - cy) * 0.06;
 
@@ -255,13 +272,50 @@ export default function HeroCanvas({ accent, variant }) {
       }
 
       renderer.render(scene, camera);
+    };
+    const animate = (now) => {
+      if (!running) return;
+      raf = requestAnimationFrame(animate);
+      if (minFrameMs && now - lastFrame < minFrameMs) return;
+      lastFrame = now;
+      draw(clock.getElapsedTime());
+    };
+    const start = () => {
+      if (running || reducedMotion) return;
+      running = true;
+      clock.getDelta();
       raf = requestAnimationFrame(animate);
     };
-    animate();
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+    };
+    const sync = () => {
+      if (inView && !document.hidden && !reducedMotion) start();
+      else stop();
+    };
+
+    let io;
+    if (reducedMotion) {
+      draw(0);
+    } else {
+      io = new IntersectionObserver(
+        ([entry]) => {
+          inView = entry.isIntersecting;
+          sync();
+        },
+        { threshold: 0.08 }
+      );
+      io.observe(mount);
+      document.addEventListener("visibilitychange", sync);
+      sync();
+    }
 
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("mousemove", onMove);
+      stop();
+      if (io) io.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+      if (!isLite) window.removeEventListener("mousemove", onMove);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       if (renderer.domElement && renderer.domElement.parentNode) {

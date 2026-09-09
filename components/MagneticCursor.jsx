@@ -6,8 +6,17 @@ export default function MagneticCursor() {
   const ringRef = useRef(null);
   const dotRef = useRef(null);
   const [hovered, setHovered] = useState(false);
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
+    const fine = window.matchMedia("(pointer: fine)").matches;
+    const motionOk = !window.matchMedia("(prefers-reduced-motion: reduce)")
+      .matches;
+    setEnabled(fine && motionOk);
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
     let rx = window.innerWidth / 2,
       ry = window.innerHeight / 2;
     let dx = rx,
@@ -15,13 +24,8 @@ export default function MagneticCursor() {
     let tx = rx,
       ty = ry;
     let raf;
+    let running = false;
 
-    const move = (e) => {
-      tx = e.clientX;
-      ty = e.clientY;
-      dx = e.clientX;
-      dy = e.clientY;
-    };
     const tick = () => {
       rx += (tx - rx) * 0.18;
       ry += (ty - ry) * 0.18;
@@ -31,7 +35,26 @@ export default function MagneticCursor() {
       if (dotRef.current) {
         dotRef.current.style.transform = `translate(${dx}px, ${dy}px) translate(-50%, -50%)`;
       }
+      const settled =
+        Math.abs(tx - rx) < 0.15 && Math.abs(ty - ry) < 0.15;
+      if (settled) {
+        running = false;
+        raf = null;
+        return;
+      }
       raf = requestAnimationFrame(tick);
+    };
+    const start = () => {
+      if (running) return;
+      running = true;
+      raf = requestAnimationFrame(tick);
+    };
+    const move = (e) => {
+      tx = e.clientX;
+      ty = e.clientY;
+      dx = e.clientX;
+      dy = e.clientY;
+      start();
     };
     const enter = (e) => {
       if (
@@ -53,17 +76,18 @@ export default function MagneticCursor() {
         setHovered(false);
       }
     };
-    window.addEventListener("mousemove", move);
+    window.addEventListener("mousemove", move, { passive: true });
     document.addEventListener("mouseover", enter);
     document.addEventListener("mouseout", leave);
-    raf = requestAnimationFrame(tick);
     return () => {
       window.removeEventListener("mousemove", move);
       document.removeEventListener("mouseover", enter);
       document.removeEventListener("mouseout", leave);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [enabled]);
+
+  if (!enabled) return null;
 
   return (
     <>

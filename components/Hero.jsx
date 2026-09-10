@@ -64,8 +64,9 @@ export default function Hero({ accent, heroVariant, title }) {
           </span>
         </h1>
         <p className="hero-sub">
-          Your technology partner in the real estate sector. We transform your
-          business into a globally visible business ecosystem.
+          Atlanta’s leading technology partner for real estate enterprises. We
+          transform property businesses into globally visible digital
+          ecosystems.
         </p>
         <div className="hero-actions">
           <MagneticBtn primary href="#contact">

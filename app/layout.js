@@ -1,9 +1,13 @@
 import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import {
   SITE_DESCRIPTION,
+  SITE_KEYWORDS,
+  SITE_LOCATION,
   SITE_NAME,
   SITE_TAGLINE,
+  SITE_TITLE,
   SITE_URL,
+  SITE_EMAIL,
 } from "@/lib/site";
 import "./globals.css";
 
@@ -28,10 +32,45 @@ const jetbrains = JetBrains_Mono({
   display: "swap",
 });
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  url: SITE_URL,
+  email: SITE_EMAIL,
+  slogan: SITE_TAGLINE,
+  areaServed: {
+    "@type": "City",
+    name: "Atlanta",
+    containedInPlace: {
+      "@type": "State",
+      name: "Georgia",
+      containedInPlace: {
+        "@type": "Country",
+        name: "United States",
+      },
+    },
+  },
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Atlanta",
+    addressRegion: "GA",
+    addressCountry: "US",
+  },
+  knowsAbout: [
+    "Real estate technology",
+    "PropTech",
+    "Enterprise dashboards",
+    "Property automation",
+    "360 property tours",
+  ],
+};
+
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    default: SITE_TITLE,
     template: `%s — ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -40,15 +79,7 @@ export const metadata = {
   creator: SITE_NAME,
   publisher: SITE_NAME,
   category: "technology",
-  keywords: [
-    SITE_NAME,
-    "real estate technology",
-    "property technology",
-    "web development",
-    "automation",
-    "360 tours",
-    "enterprise dashboards",
-  ],
+  keywords: SITE_KEYWORDS,
   alternates: {
     canonical: "/",
   },
@@ -57,28 +88,28 @@ export const metadata = {
     locale: "en_US",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: SITE_NAME,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     images: [
       {
         url: "/opengraph-image.jpg",
         width: 1200,
         height: 630,
-        alt: SITE_NAME,
+        alt: `${SITE_NAME} — ${SITE_LOCATION}`,
         type: "image/jpeg",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: SITE_NAME,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     images: [
       {
         url: "/twitter-image.jpg",
         width: 1200,
         height: 630,
-        alt: SITE_NAME,
+        alt: `${SITE_NAME} — ${SITE_LOCATION}`,
       },
     ],
   },
@@ -103,6 +134,10 @@ export const metadata = {
       "max-video-preview": -1,
     },
   },
+  other: {
+    "geo.region": "US-GA",
+    "geo.placename": "Atlanta",
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -111,7 +146,13 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${inter.variable} ${interTight.variable} ${jetbrains.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        {children}
+      </body>
     </html>
   );
 }

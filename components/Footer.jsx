@@ -11,8 +11,9 @@ export default function Footer() {
         <div className="foot-brand">
           <h5>{SITE_NAME}.</h5>
           <p>
-            Digital studio specializing in premium products, intelligent
-            automation, and immersive experiences. Barcelona — Madrid — remote.
+            Atlanta’s leading real estate technology studio — premium products,
+            intelligent automation, and immersive experiences for property
+            enterprises.
           </p>
         </div>
         <div className="foot-col">

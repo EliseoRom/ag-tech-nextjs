@@ -43,6 +43,14 @@ export default function HeroCanvas({ accent, variant }) {
     const group = new THREE.Group();
     scene.add(group);
 
+    const applyMobileScale = () => {
+      const mobile = window.innerWidth < 768;
+      const s = mobile ? 0.58 : 1;
+      group.scale.set(s, s, s);
+      camera.position.z = mobile ? 7.2 : 6;
+    };
+    applyMobileScale();
+
     // Far star field
     let starField;
     {
@@ -216,6 +224,7 @@ export default function HeroCanvas({ accent, variant }) {
       camera.aspect = mount.clientWidth / mount.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(mount.clientWidth, mount.clientHeight);
+      applyMobileScale();
     };
     window.addEventListener("resize", onResize);
 

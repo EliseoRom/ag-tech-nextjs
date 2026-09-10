@@ -1114,7 +1114,6 @@ footer {
   max-width: 640px;
 }
 .foot-bottom {
-  display: flex; justify-content: space-between;
   padding-top: 30px;
   border-top: 1px solid var(--line);
   font-size: 12px;
@@ -1170,13 +1169,6 @@ footer {
   .metric:nth-child(2n) { border-right: 0; }
   .foot-top { grid-template-columns: 1fr 1fr; }
   .cta { padding: 60px 36px; margin: 60px 5vw; border-radius: 24px; }
-}
-
-@media (max-width: 640px) {
-  .foot-bottom {
-    flex-direction: column;
-    gap: 10px;
-  }
 }
 
 /* ───────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 "use client";
 
-import { SITE_NAME } from "@/lib/site";
+import { SITE_EMAIL, SITE_MAILTO, SITE_NAME } from "@/lib/site";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -31,6 +31,7 @@ export default function Footer() {
         </div>
         <div className="foot-col">
           <h6>Contact</h6>
+          <a href={SITE_MAILTO}>{SITE_EMAIL}</a>
         </div>
       </div>
       <div className="foot-copyright">
@@ -46,7 +47,6 @@ export default function Footer() {
         <span>
           © {year} {SITE_NAME}. All rights reserved.
         </span>
-        <span>Made with obsession in Barcelona ↘</span>
       </div>
     </footer>
   );

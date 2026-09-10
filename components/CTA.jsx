@@ -2,6 +2,7 @@
 
 import MagneticBtn from "./MagneticBtn";
 import { useReveal } from "./useReveal";
+import { SITE_MAILTO } from "@/lib/site";
 
 export default function CTA() {
   useReveal();
@@ -18,7 +19,7 @@ export default function CTA() {
         Tell us what you have in mind — we respond within 24 hours.
       </p>
       <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-        <MagneticBtn primary href="mailto:hola@ag-tech.studio">
+        <MagneticBtn primary href={SITE_MAILTO}>
           Book a discovery call
           <span className="btn-arrow">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

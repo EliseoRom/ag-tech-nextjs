@@ -4,6 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { SITE_NAME } from "@/lib/site";
 
+function NavLink({ href, full, short, className = "" }) {
+  return (
+    <a href={href} className={className} aria-label={full}>
+      <span className="nav-label-full">{full}</span>
+      <span className="nav-label-short" aria-hidden="true">
+        {short}
+      </span>
+    </a>
+  );
+}
+
 export default function Nav({ theme, onToggleTheme }) {
   return (
     <nav className="nav">
@@ -18,12 +29,10 @@ export default function Nav({ theme, onToggleTheme }) {
         />
       </Link>
       <div className="nav-actions">
-        <a href="#services">Services</a>
-        <a href="#stack">Technology</a>
-        <a href="#process">Process</a>
-        <a href="#contact" className="nav-cta">
-          Contact
-        </a>
+        <NavLink href="#services" full="Services" short="Services" />
+        <NavLink href="#stack" full="Technology" short="Tech" />
+        <NavLink href="#process" full="Process" short="Process" />
+        <NavLink href="#contact" full="Contact" short="Contact" className="nav-cta" />
         <button
           className="theme-toggle"
           onClick={onToggleTheme}

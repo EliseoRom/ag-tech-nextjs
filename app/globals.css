@@ -429,12 +429,15 @@ h1.display.hero-title {
 .hero-title .line {
   display: block;
   overflow: hidden;
-  padding-bottom: 0.12em;
+  padding: 0.04em 0.2em 0.16em;
+  margin: 0 -0.2em;
 }
 .hero-title .word {
   display: inline-block;
   transform: translateY(0);
   animation: rise 1.1s var(--ease-spring) both;
+  /* Italic glyphs lean past the advance width — keep room inside the mask */
+  padding-inline: 0.04em;
 }
 .hero.is-ready .hero-title .word,
 .hero.is-ready .hero-sub,
@@ -694,8 +697,8 @@ h1.display.hero-title {
   font-size: clamp(36px, 5.5vw, 88px);
   font-weight: 500;
   letter-spacing: -0.04em;
-  line-height: 1.08;
-  overflow-wrap: anywhere;
+  line-height: 1.12;
+  overflow-wrap: break-word;
 }
 .section-head h2 em {
   font-style: italic;
@@ -708,6 +711,8 @@ h1.display.hero-title {
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+  /* Expand paint box so clipped italic strokes stay filled */
+  padding-inline: 0.06em;
 }
 .section-head p {
   color: var(--fg-dim);
@@ -1143,10 +1148,10 @@ h1.display.hero-title {
   font-size: clamp(32px, 5.5vw, 84px);
   font-weight: 500;
   letter-spacing: -0.045em;
-  line-height: 1.1;
+  line-height: 1.14;
   max-width: 800px;
   margin-bottom: 32px;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .cta h2 em {
   font-style: italic;
@@ -1159,6 +1164,7 @@ h1.display.hero-title {
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+  padding-inline: 0.06em;
 }
 .cta p {
   color: var(--fg-dim);
@@ -1255,14 +1261,22 @@ footer {
   display: inline-block;
   overflow: hidden;
   vertical-align: baseline;
-  padding-bottom: 0.08em;
-  margin-bottom: -0.08em;
+  /* Extra room so italic / descenders aren't clipped by the reveal mask */
+  padding: 0.06em 0.22em 0.18em;
+  margin: -0.06em -0.22em -0.1em;
+}
+em .split-line {
+  padding-left: 0.28em;
+  padding-right: 0.34em;
+  margin-left: -0.28em;
+  margin-right: -0.34em;
 }
 .split-word {
   display: inline-block;
-  transform: translateY(110%);
+  transform: translateY(115%);
   transition: transform 0.9s var(--ease-spring);
   transition-delay: var(--d, 0ms);
+  will-change: transform;
 }
 .reveal.in .split-word {
   transform: translateY(0);
@@ -1422,7 +1436,8 @@ footer {
     margin-bottom: 16px;
   }
   .hero-title .line {
-    padding-bottom: 0.08em;
+    padding: 0.04em 0.18em 0.12em;
+    margin: 0 -0.18em;
   }
   .hero-sub {
     font-size: 14px;

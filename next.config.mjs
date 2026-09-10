@@ -1,3 +1,8 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('next').NextConfig} */
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -41,21 +46,36 @@ const nextConfig = {
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
   compress: true,
+  outputFileTracingRoot: projectRoot,
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  turbopack: {
+    root: projectRoot,
+  },
   async headers() {
+    const isProd = process.env.NODE_ENV === "production";
     return [
       {
         source: "/:path*",
-        headers: securityHeaders,
+        headers: isProd
+          ? securityHeaders
+          : [
+              ...securityHeaders,
+              { key: "Cache-Control", value: "no-store, must-revalidate" },
+            ],
       },
-      {
-        source: "/_next/static/:path*",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, max-age=31536000, immutable",
-          },
-        ],
-      },
+      ...(isProd
+        ? [
+            {
+              source: "/_next/static/:path*",
+              headers: [
+                {
+                  key: "Cache-Control",
+                  value: "public, max-age=31536000, immutable",
+                },
+              ],
+            },
+          ]
+        : []),
       {
         source: "/opengraph-image.jpg",
         headers: [

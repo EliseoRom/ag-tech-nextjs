@@ -17,9 +17,16 @@ export default function manifest() {
     lang: "en",
     icons: [
       {
-        src: "/icon",
-        sizes: "32x32",
+        src: "/favicon.png",
+        sizes: "192x192",
         type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+        purpose: "any",
       },
     ],
     id: SITE_URL,

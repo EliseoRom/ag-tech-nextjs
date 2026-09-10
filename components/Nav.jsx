@@ -1,11 +1,22 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
+import { SITE_NAME } from "@/lib/site";
+
 export default function Nav({ theme, onToggleTheme }) {
   return (
     <nav className="nav">
-      <div className="nav-brand">
-        <span>PTS</span>
-      </div>
+      <Link href="/" className="nav-brand" aria-label={`${SITE_NAME} home`}>
+        <Image
+          src="/logo-mark.jpg"
+          alt={SITE_NAME}
+          width={36}
+          height={36}
+          className="nav-logo"
+          priority
+        />
+      </Link>
       <div className="nav-actions">
         <a href="#services">Services</a>
         <a href="#stack">Technology</a>

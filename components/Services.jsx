@@ -175,8 +175,8 @@ export default function Services() {
 
   return (
     <section className="section" id="services">
-      <div className="section-head reveal">
-        <div>
+      <div className="section-head">
+        <div className="reveal">
           <div className="eyebrow" style={{ marginBottom: 28 }}>
             02 — THE ECOSYSTEM
           </div>
@@ -184,13 +184,13 @@ export default function Services() {
             <SplitWords text="Services" />
             <br />
             <em>
-              <SplitWords text="that orbit" baseDelay={300} />
+              <SplitWords text="that orbit" baseDelay={280} />
             </em>
             <br />
-            <SplitWords text="your business." baseDelay={650} />
+            <SplitWords text="your business." baseDelay={560} />
           </h2>
         </div>
-        <p>
+        <p className="reveal">
           Six integrated modules that work independently or as a coherent
           system. Select a service to view the details.
         </p>

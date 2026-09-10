@@ -1,24 +1,28 @@
 "use client";
 
 import MagneticBtn from "./MagneticBtn";
-import { useReveal } from "./useReveal";
+import SplitWords from "./SplitWords";
 import { SITE_MAILTO } from "@/lib/site";
 
 export default function CTA() {
-  useReveal();
   return (
-    <section className="cta reveal" id="contact">
-      <div className="eyebrow" style={{ marginBottom: 28 }}>
-        LET&apos;S TALK
+    <section className="cta" id="contact">
+      <div className="reveal">
+        <div className="eyebrow" style={{ marginBottom: 28 }}>
+          LET&apos;S TALK
+        </div>
+        <h2>
+          <SplitWords text="Ready to build something" />{" "}
+          <em>
+            <SplitWords text="memorable?" baseDelay={360} />
+          </em>
+        </h2>
       </div>
-      <h2>
-        Ready to build something <em>memorable</em>?
-      </h2>
-      <p>
+      <p className="reveal">
         We take on a limited number of projects each quarter to ensure quality.
         Tell us what you have in mind — we respond within 24 hours.
       </p>
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+      <div className="reveal" style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
         <MagneticBtn primary href={SITE_MAILTO}>
           Book a discovery call
           <span className="btn-arrow">

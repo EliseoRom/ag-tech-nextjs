@@ -54,6 +54,12 @@ function applySecurityHeaders(response) {
 }
 
 function applyCacheHeaders(request, response) {
+  if (process.env.NODE_ENV !== "production") {
+    response.headers.set("Cache-Control", "no-store, must-revalidate");
+    response.headers.set("Pragma", "no-cache");
+    return response;
+  }
+
   const { pathname } = request.nextUrl;
 
   if (

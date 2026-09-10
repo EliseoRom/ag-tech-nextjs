@@ -45,16 +45,25 @@ export default function MagneticCursor() {
       raf = requestAnimationFrame(tick);
     };
     const start = () => {
-      if (running) return;
+      if (running || document.hidden) return;
       running = true;
       raf = requestAnimationFrame(tick);
     };
+    const stop = () => {
+      running = false;
+      cancelAnimationFrame(raf);
+      raf = null;
+    };
     const move = (e) => {
+      if (document.hidden) return;
       tx = e.clientX;
       ty = e.clientY;
       dx = e.clientX;
       dy = e.clientY;
       start();
+    };
+    const onVisibility = () => {
+      if (document.hidden) stop();
     };
     const enter = (e) => {
       if (
@@ -79,11 +88,13 @@ export default function MagneticCursor() {
     window.addEventListener("mousemove", move, { passive: true });
     document.addEventListener("mouseover", enter);
     document.addEventListener("mouseout", leave);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       window.removeEventListener("mousemove", move);
       document.removeEventListener("mouseover", enter);
       document.removeEventListener("mouseout", leave);
-      cancelAnimationFrame(raf);
+      document.removeEventListener("visibilitychange", onVisibility);
+      stop();
     };
   }, [enabled]);
 

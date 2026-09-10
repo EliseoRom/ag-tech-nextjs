@@ -1,4 +1,5 @@
 import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
@@ -10,6 +11,7 @@ import {
   SITE_EMAIL,
 } from "@/lib/site";
 import "./globals.css";
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -113,6 +115,16 @@ export const metadata = {
       },
     ],
   },
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png", sizes: "192x192" },
+      { url: "/logo-mark.jpg", type: "image/jpeg", sizes: "512x512" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", type: "image/png", sizes: "180x180" },
+    ],
+    shortcut: "/favicon.png",
+  },
   appleWebApp: {
     capable: true,
     title: SITE_NAME,
@@ -145,8 +157,12 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       className={`${inter.variable} ${interTight.variable} ${jetbrains.variable}`}
+      suppressHydrationWarning
     >
       <body>
+        <Script id="clear-stale-cache" strategy="afterInteractive">
+          {`if("serviceWorker" in navigator){navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){r.unregister()})})}`}
+        </Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -12,20 +12,30 @@ export default function HeroCanvas({ accent, variant }) {
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
-    const isLite =
-      reducedMotion ||
+    const isMobile =
       window.matchMedia("(pointer: coarse)").matches ||
       window.innerWidth < 768;
-    const starCount = isLite ? 420 : 1800;
-    const flareCount = isLite ? 6 : 14;
+    const isLite = reducedMotion || isMobile;
+    const starCount = isMobile ? 900 : 1800;
+    const flareCount = isMobile ? 12 : 16;
+
+    const measure = () => {
+      const box = mount.getBoundingClientRect();
+      return {
+        w: Math.max(
+          1,
+          Math.floor(box.width || mount.clientWidth || window.innerWidth)
+        ),
+        h: Math.max(
+          1,
+          Math.floor(box.height || mount.clientHeight || window.innerHeight)
+        ),
+      };
+    };
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      mount.clientWidth / mount.clientHeight,
-      0.1,
-      100
-    );
+    const { w: startW, h: startH } = measure();
+    const camera = new THREE.PerspectiveCamera(45, startW / startH, 0.1, 100);
     camera.position.z = 6;
 
     const renderer = new THREE.WebGLRenderer({
@@ -33,8 +43,13 @@ export default function HeroCanvas({ accent, variant }) {
       alpha: true,
       powerPreference: isLite ? "low-power" : "default",
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isLite ? 1 : 1.5));
-    renderer.setSize(mount.clientWidth, mount.clientHeight);
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio || 1, isLite ? 1 : 1.5)
+    );
+    renderer.setSize(startW, startH);
+    renderer.domElement.style.display = "block";
+    renderer.domElement.style.width = "100%";
+    renderer.domElement.style.height = "100%";
     mount.appendChild(renderer.domElement);
 
     const color = new THREE.Color(accent || "#38BDF8");
@@ -45,37 +60,56 @@ export default function HeroCanvas({ accent, variant }) {
 
     const applyMobileScale = () => {
       const mobile = window.innerWidth < 768;
-      const s = mobile ? 0.58 : 1;
+      const s = mobile ? 0.72 : 1.05;
       group.scale.set(s, s, s);
-      camera.position.z = mobile ? 7.2 : 6;
+      group.position.x = mobile ? 0.35 : 1.35;
+      group.position.y = mobile ? 0.15 : 0.05;
+      camera.position.z = mobile ? 6.2 : 5.6;
     };
     applyMobileScale();
 
-    // Far star field
     let starField;
     {
       const count = starCount;
       const positions = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
+      const speeds = [];
+      const phases = [];
+      const radii = [];
+      const twinkles = [];
       for (let i = 0; i < count; i++) {
         positions[i * 3] = (Math.random() - 0.5) * 28;
         positions[i * 3 + 1] = (Math.random() - 0.5) * 18;
         positions[i * 3 + 2] = -6 - Math.random() * 14;
+        colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = 1;
+        speeds.push(0.06 + Math.random() * 0.16);
+        phases.push(Math.random() * Math.PI * 2);
+        radii.push(0.12 + Math.random() * 0.38);
+        twinkles.push(0.7 + Math.random() * 2.4);
       }
       const g = new THREE.BufferGeometry();
       g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      g.setAttribute("color", new THREE.BufferAttribute(colors, 3));
       const m = new THREE.PointsMaterial({
         color: 0xffffff,
-        size: 0.018,
-        sizeAttenuation: true,
+        vertexColors: true,
+        size: isMobile ? 2.4 : 1.8,
+        sizeAttenuation: false,
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.9,
         depthWrite: false,
       });
       starField = new THREE.Points(g, m);
+      starField.userData = {
+        speeds,
+        phases,
+        radii,
+        twinkles,
+        base: positions.slice(),
+      };
       scene.add(starField);
     }
 
-    // Glowing flares (slow drift)
     let flares;
     {
       const activeFlareCount = flareCount;
@@ -87,9 +121,9 @@ export default function HeroCanvas({ accent, variant }) {
         positions[i * 3] = (Math.random() - 0.5) * 16;
         positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
         positions[i * 3 + 2] = -3 - Math.random() * 8;
-        speeds.push(0.015 + Math.random() * 0.04);
+        speeds.push(0.08 + Math.random() * 0.18);
         phases.push(Math.random() * Math.PI * 2);
-        radii.push(0.4 + Math.random() * 1.2);
+        radii.push(0.7 + Math.random() * 1.6);
       }
       const g = new THREE.BufferGeometry();
       g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
@@ -109,10 +143,10 @@ export default function HeroCanvas({ accent, variant }) {
       const m = new THREE.PointsMaterial({
         map: tex,
         color: 0xffffff,
-        size: 0.55,
+        size: isMobile ? 1.15 : 0.85,
         sizeAttenuation: true,
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.9,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       });
@@ -155,7 +189,7 @@ export default function HeroCanvas({ accent, variant }) {
       const lineMat = new THREE.LineBasicMaterial({
         color,
         transparent: true,
-        opacity: 0.65,
+        opacity: 0.85,
       });
       mainMesh = new THREE.LineSegments(wf, lineMat);
       group.add(mainMesh);
@@ -164,16 +198,16 @@ export default function HeroCanvas({ accent, variant }) {
       const innerMat = new THREE.MeshBasicMaterial({
         color,
         transparent: true,
-        opacity: 0.04,
+        opacity: 0.08,
       });
       innerMesh = new THREE.Mesh(innerGeo, innerMat);
       group.add(innerMesh);
 
-      const ringGeo = new THREE.TorusGeometry(2.4, 0.005, 8, 200);
+      const ringGeo = new THREE.TorusGeometry(2.4, 0.008, 8, 200);
       const ringMat = new THREE.MeshBasicMaterial({
         color: colorWhite,
         transparent: true,
-        opacity: 0.18,
+        opacity: 0.28,
       });
       ring = new THREE.Mesh(ringGeo, ringMat);
       ring.rotation.x = Math.PI / 2.6;
@@ -193,9 +227,9 @@ export default function HeroCanvas({ accent, variant }) {
       dg.setAttribute("position", new THREE.BufferAttribute(dpos, 3));
       const dm = new THREE.PointsMaterial({
         color: colorWhite,
-        size: 0.01,
+        size: isMobile ? 0.035 : 0.022,
         transparent: true,
-        opacity: 0.35,
+        opacity: 0.5,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
@@ -219,18 +253,20 @@ export default function HeroCanvas({ accent, variant }) {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
 
-    const onResize = () => {
-      if (!mount.clientWidth || !mount.clientHeight) return;
-      camera.aspect = mount.clientWidth / mount.clientHeight;
+    const applySize = () => {
+      const { w, h } = measure();
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(mount.clientWidth, mount.clientHeight);
+      renderer.setSize(w, h);
       applyMobileScale();
     };
-    window.addEventListener("resize", onResize);
+
+    window.addEventListener("resize", applySize);
+    const ro = new ResizeObserver(applySize);
+    ro.observe(mount);
 
     let raf;
     let running = false;
-    let inView = true;
     let lastFrame = 0;
     const minFrameMs = isLite ? 33 : 0;
     const clock = new THREE.Clock();
@@ -240,11 +276,31 @@ export default function HeroCanvas({ accent, variant }) {
 
       group.rotation.y = t * 0.07 + cx * 0.6;
       group.rotation.x = -cy * 0.4 + Math.sin(t * 0.2) * 0.05;
-      group.position.y = scrollY * -0.0015;
+      group.position.y = (window.innerWidth < 768 ? 0.15 : 0.05) + scrollY * -0.0015;
 
       if (starField) {
-        starField.rotation.y = t * 0.008 + cx * 0.05;
-        starField.rotation.x = -cy * 0.04;
+        starField.rotation.y = t * 0.018 + cx * 0.05;
+        starField.rotation.x = t * 0.006 - cy * 0.04;
+        const pos = starField.geometry.attributes.position;
+        const col = starField.geometry.attributes.color;
+        const { speeds, phases, radii, twinkles, base } = starField.userData;
+        for (let i = 0; i < pos.count; i++) {
+          const p = phases[i];
+          const s = speeds[i];
+          const r = radii[i];
+          pos.array[i * 3] = base[i * 3] + Math.sin(t * s + p) * r;
+          pos.array[i * 3 + 1] =
+            base[i * 3 + 1] + Math.cos(t * s * 0.75 + p) * r * 0.55;
+          pos.array[i * 3 + 2] =
+            base[i * 3 + 2] + Math.sin(t * s * 0.45 + p) * 0.2;
+          const tw =
+            0.28 + 0.72 * (0.5 + 0.5 * Math.sin(t * twinkles[i] + p));
+          col.array[i * 3] = tw;
+          col.array[i * 3 + 1] = tw;
+          col.array[i * 3 + 2] = tw;
+        }
+        pos.needsUpdate = true;
+        col.needsUpdate = true;
       }
       if (flares) {
         const pos = flares.geometry.attributes.position;
@@ -260,7 +316,8 @@ export default function HeroCanvas({ accent, variant }) {
             base[i * 3 + 2] + Math.sin(t * s * 0.4 + p) * 0.3;
         }
         pos.needsUpdate = true;
-        flares.material.opacity = 0.7 + Math.sin(t * 0.4) * 0.15;
+        flares.material.opacity = 0.62 + Math.sin(t * 0.55) * 0.28;
+        flares.rotation.z = t * 0.03;
       }
 
       if (mainMesh) {
@@ -300,33 +357,24 @@ export default function HeroCanvas({ accent, variant }) {
       cancelAnimationFrame(raf);
     };
     const sync = () => {
-      if (inView && !document.hidden && !reducedMotion) start();
-      else stop();
+      if (document.hidden || reducedMotion) stop();
+      else start();
     };
 
-    let io;
     if (reducedMotion) {
       draw(0);
     } else {
-      io = new IntersectionObserver(
-        ([entry]) => {
-          inView = entry.isIntersecting;
-          sync();
-        },
-        { threshold: 0.08 }
-      );
-      io.observe(mount);
+      start();
       document.addEventListener("visibilitychange", sync);
-      sync();
     }
 
     return () => {
       stop();
-      if (io) io.disconnect();
+      ro.disconnect();
       document.removeEventListener("visibilitychange", sync);
       if (!isLite) window.removeEventListener("mousemove", onMove);
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", applySize);
       if (renderer.domElement && renderer.domElement.parentNode) {
         renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
@@ -334,13 +382,12 @@ export default function HeroCanvas({ accent, variant }) {
       scene.traverse((o) => {
         if (o.geometry) o.geometry.dispose();
         if (o.material) {
-          if (Array.isArray(o.material))
-            o.material.forEach((m) => m.dispose());
+          if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose());
           else o.material.dispose();
         }
       });
     };
   }, [accent, variant]);
 
-  return <div ref={mountRef} className="hero-canvas"></div>;
+  return <div ref={mountRef} className="hero-canvas" aria-hidden="true" />;
 }

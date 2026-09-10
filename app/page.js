@@ -9,16 +9,19 @@ import Stack from "@/components/Stack";
 import Philosophy from "@/components/Philosophy";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
-import MagneticCursor from "@/components/MagneticCursor";
 import ScrollProgress from "@/components/ScrollProgress";
 import Sun from "@/components/Sun";
 import ThemeFlash from "@/components/ThemeFlash";
+import { usePageMotion } from "@/components/usePageMotion";
+import { useReveal } from "@/components/useReveal";
 
 const ACCENT = "#38BDF8";
 
 export default function Page() {
   const [theme, setTheme] = useState("dark");
   const themeTimer = useRef(null);
+  usePageMotion();
+  useReveal();
 
   useEffect(() => {
     document.documentElement.style.setProperty("--accent", ACCENT);
@@ -54,7 +57,6 @@ export default function Page() {
     <>
       <Sun />
       <ThemeFlash />
-      <MagneticCursor />
       <ScrollProgress />
       <Nav theme={theme} onToggleTheme={toggleTheme} />
       <Hero

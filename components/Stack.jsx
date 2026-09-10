@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import SplitWords from "./SplitWords";
 import { useReveal } from "./useReveal";
+import { useAwayClass } from "./useAwayClass";
 
 const CODE_LINES = [
   { html: '<span class="tk-com">// Deployment pipeline — Edge Network</span>' },
@@ -20,28 +21,45 @@ const CODE_LINES = [
   { html: '&nbsp;&nbsp;<span class="tk-pn">}</span>,' },
   { html: "});" },
   { html: "" },
-  { html: '<span class="tk-kw">await</span> <span class="tk-fn">deploy</span>(site); <span class="tk-com">// ✓ 12 regiones</span>' },
+  { html: '<span class="tk-kw">await</span> <span class="tk-fn">deploy</span>(site); <span class="tk-com">// ✓ 12 regions</span>' },
 ];
 
 function CodeBlock() {
   const ref = useRef(null);
   useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const reveal = () => {
+      el.classList.add("is-visible");
+    };
+
     const io = new IntersectionObserver(
-      (es) => {
-        es.forEach((e) => {
-          if (e.isIntersecting) {
-            const lines = ref.current.querySelectorAll(".stack-code-line");
-            lines.forEach((l, i) => {
-              l.style.animationDelay = i * 70 + "ms";
-            });
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            reveal();
             io.disconnect();
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.05, rootMargin: "0px 0px 10% 0px" }
     );
-    if (ref.current) io.observe(ref.current);
-    return () => io.disconnect();
+    io.observe(el);
+
+    // Safety if IO never fires (cache/tab restore / partial visibility)
+    const fallback = window.setTimeout(() => {
+      const rect = el.getBoundingClientRect();
+      const vh = window.innerHeight || 0;
+      if (rect.top < vh * 1.2 && rect.bottom > -80) reveal();
+    }, 2500);
+    const hard = window.setTimeout(reveal, 6000);
+
+    return () => {
+      io.disconnect();
+      window.clearTimeout(fallback);
+      window.clearTimeout(hard);
+    };
   }, []);
   return (
     <div className="stack-code" ref={ref}>
@@ -60,6 +78,7 @@ function CodeBlock() {
           <span
             key={i}
             className="stack-code-line"
+            style={{ transitionDelay: `${i * 55}ms` }}
             dangerouslySetInnerHTML={{ __html: l.html || "&nbsp;" }}
           />
         ))}
@@ -69,6 +88,7 @@ function CodeBlock() {
 }
 
 function NodeDiagram() {
+  const awayRef = useAwayClass();
   const nodes = [
     { id: "edge", x: 50, y: 18, r: 22, label: "Edge" },
     { id: "react", x: 18, y: 40, r: 16, label: "React" },
@@ -88,7 +108,7 @@ function NodeDiagram() {
   ];
   const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
   return (
-    <div className="stack-nodes">
+    <div className="stack-nodes" ref={awayRef}>
       <div className="stack-nodes-grid"></div>
       <svg
         viewBox="0 0 100 100"
@@ -166,8 +186,8 @@ export default function Stack() {
   useReveal();
   return (
     <section className="section" id="stack">
-      <div className="section-head reveal">
-        <div>
+      <div className="section-head">
+        <div className="reveal">
           <div className="eyebrow" style={{ marginBottom: 28 }}>
             03 — TECHNICAL AUTHORITY
           </div>
@@ -175,13 +195,13 @@ export default function Stack() {
             <SplitWords text="Built" />
             <br />
             <em>
-              <SplitWords text="with materials" baseDelay={300} />
+              <SplitWords text="with materials" baseDelay={280} />
             </em>
             <br />
-            <SplitWords text="from the future." baseDelay={750} />
+            <SplitWords text="from the future." baseDelay={620} />
           </h2>
         </div>
-        <p>
+        <p className="reveal">
           We work with modern stacks — Next.js on the edge, React 19, Three.js,
           Postgres, specialized LLMs — assembled with the discipline of a
           hardware team. Every technical decision is deliberate and measurable.
